@@ -3,7 +3,7 @@
 it's a very simple packet sniffer.
 for run follow these simple steps:
 
-  - install libpcap and libjson-cpp
+  - install libpcap ,libjson-cpp and spdlog
   - run command `chmod +x complile.sh`
   - run command `./compile`
   - then run `g++ list_all_devices.cpp -lpcap -o list.out`
