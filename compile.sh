@@ -1,5 +1,4 @@
 #!/bin/bash
 
 
-g++ ./packet.cpp -lpcap -o pcap.out 
-
+g++ ./main.cpp -lpcap -ljsoncpp -o pcap.out 

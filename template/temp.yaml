@@ -1,0 +1,14 @@
+---
+# numbes or characters that must be in a specific byte :
+# example:
+# 12-13 : [80, 86dd] this means one items in list must be in bytes 12 and 13
+# keywords :
+# ~int   : this convert byte value to integer
+# ~pklen : refer to packet length
+# ~not   : it's equal to !=
+#
+- numbers:
+        12-13: 80
+        14: [40, 41, 42, 43, 44, 45]
+        16-17 ~int: ~pklen
+        22~int: ~not 0
