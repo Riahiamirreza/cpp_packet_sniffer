@@ -24,6 +24,7 @@ class Logger{
 
 	public:
 		int logs = 0; //number of times this object has created log
+		int loglevel;
 
 		Logger(){
 
@@ -31,17 +32,18 @@ class Logger{
 			
 		}
 
+		void set_log_level(int level){
+		
+			loglevel = level;
+
+		}
+
 		void log(std::string msg, int level ){
 		
-			if(true){
-
+			if(level <= loglevel){
 				log_(msg, level);
 				logs ++;
 			
-			} else {
-				
-				//log__(msg, level, file_name);
-				logs ++;
 			}
 		}
 
@@ -85,6 +87,13 @@ class Logger{
 		
 
 			static auto console = spdlog::stdout_color_mt("console");
+
+			if(loglevel == 4 )
+				console->set_level(spdlog::level::level_enum::debug);
+
+			//else if(loglevel == 5 )
+			//	console->set_level(spdlog::level::level_enum::trace);
+
 			switch(level){
 				case 0:
 					console->critical(msg);

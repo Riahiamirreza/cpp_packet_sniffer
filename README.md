@@ -1,4 +1,16 @@
-#p3-advandced
+# Packet sniffer
 
-###release date : 2020 October 15
+it's a very simple packet sniffer.
+for run follow these simple steps:
 
+  - install libpcap, libjson-cpp and spdlog
+  - run command `chmod +x complile.sh`
+  - run command `./compile`
+  - then run `g++ list_all_devices.cpp -lpcap -o list.out`
+  - for seeing at available devices on network run `./list.out`
+  - the run `sudo ./pcap.out <deivice-name> <number-of-packets-to-capture> <log-level>`
+
+for example:
+    `sudo ./pcap enp3s0 50 3`
+
+this will capture 50 packets on device enp3s0 with and log levels are at level info.

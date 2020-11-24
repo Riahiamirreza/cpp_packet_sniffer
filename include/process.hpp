@@ -26,18 +26,25 @@ class Process{
 		int len            ;	      // it's number of 
 		int new_file_   = 0;
 		int packet_loglevel;
+		int clevel;                   // current network layer.
 		JParser jfile;
 		Json::Value::const_iterator iter;
+		std::vector<std::vector<std::string>> all_data;
 
-		Process(){
-			
-			JParser jconfig;
-			jconfig.init(conf_file_address, 4);
-			dir_address = jconfig.obj["directory"].asString();
-			loglevel = jconfig.obj["Process:loglevel"].asInt();
-			packet_loglevel = jconfig.obj["Packet:loglevel"].asInt();
-			lg.log("Packet:Packet:dir_address: " + dir_address,loglevel);
+		Process(){}
 
+		/*
+		 * This function will get the config
+		 * variables and store them.
+		 */
+
+		void setconf(std::string dir_address_, int loglevel, std::vector<std::vector<std::string>> all_data_){
+
+			lg.set_log_level(loglevel);
+			//dir_address = dir_address_;
+			//lg.log("Proc:Proc:dir_address: " + dir_address,4);
+			all_data = all_data_;
+		
 		}
 
 		/*
@@ -46,23 +53,60 @@ class Process{
 		 */
 
 		void init(std::string level){
+		
+			if(level == "network")
+				clevel = 0;
+
+			else if(level == "transport")
+				clevel = 1;
+			
+			else if(level == "application")
+				clevel = 2;
+			
+			else 
+				clevel = 0;
+
+			new_file_ = 1;
+			lof = all_data[clevel];
+		}
+		/*
+		void init(std::string level){
 			
 			sub_dir = dir_address + "/" + level;
-			char addr[ sub_dir.length() + 1];
-			strcpy(addr,sub_dir.c_str());
-			lof = file(addr);
-			lg.log(std::to_string(lof.size()),loglevel);
-			lg.log(sub_dir,loglevel);
-			new_file_ = 1;
+			//char addr[ sub_dir.length() + 1];
+			//strcpy(addr,sub_dir.c_str());
+			lof = file(sub_dir);
+			lg.log("Proc:init: " + std::to_string(lof.size()), 5);
+			lg.log("Proc:init: " + sub_dir, 5);
+			new_file_ = 1; 
 
 		}
-
+		*/
 
 		/*
 		 * this function will jump to
 		 * the next file in lof (list of files)
 		 */
 
+		void next_file(){
+		
+			static int counter = 0;
+			if(new_file_){
+				counter = 0;
+				new_file_    = 0;
+			}
+
+			jfile.init_string(all_data[clevel][counter], loglevel);
+
+			file_name = jfile.get_name();
+			lg.log("Proc:next_file: " + all_data[clevel][counter], 5);
+			lg.log("Proc:next_file: " + file_name, 4);
+
+			jfile.set_size();
+			len = jfile.total_kvs;
+			counter++;
+		}
+		/*
 		void next_file(){
 
 
@@ -74,28 +118,16 @@ class Process{
 
 			jfile.init(sub_dir + "/" + lof[counter], 5);
 			file_name = lof[counter];
-			lg.log("Proc:next_file: " + sub_dir + "/" + lof[counter], loglevel);
+			lg.log("Proc:next_file: " + sub_dir + "/" + lof[counter], 5);
 			counter++;
 			
-			/*
-			static int counter = 0;
-			if(counter < lof.size()){
-				jfile.init(sub_dir + "/" + lof[counter], 5);
-				file_name = lof[counter];
-				lg.log("Proc:next_file: " + sub_dir + "/" + lof[counter], loglevel);
-				counter++;
-			}
-			else{
-				end_of_dir = 1;
-			}
-			*/
-
 			if(!end_of_dir){
 				jfile.set_size();
 				len = jfile.total_kvs;
 			}
 
 		}
+		*/
 
 
 		/*
@@ -106,9 +138,7 @@ class Process{
 		void next_step(){
 			
 			iter = jfile.iterate_json();
-			lg.log("proc: next step", loglevel);
-			//if(iter.key().asString().length() == 0 )
-			//	end_of_file = 0;
+			lg.log("proc: next step", 5);
 		}
 
 		/*
@@ -120,7 +150,7 @@ class Process{
 
 			std::vector<int> keys;
 			std::string str_keys = iter.key().asString();
-			lg.log("proc : " + str_keys, loglevel);
+			lg.log("proc : " + str_keys, 5);
 			std::replace(str_keys.begin(), str_keys.end(), '-', ' ');
 			std::stringstream ss(str_keys);
 			int temp;
@@ -130,6 +160,11 @@ class Process{
 			return keys;
 		}
 
+		std::string get_key(){
+			
+			std::string str_key = iter.key().asString();
+			return str_key;
+		}
 		
 		/*
 		 * this function will return
@@ -146,7 +181,6 @@ class Process{
 		}
 
 
-	private:
 
 		
 		/*
@@ -156,8 +190,11 @@ class Process{
 		 *
 		 */
 
-		std::vector<std::string> file(char *address) {
+		std::vector<std::string> file(std::string address_) {
         
+			int size = address_.length();
+			char address[size+1];
+			strcpy(address, address_.c_str());
 	        	DIR *dr;
 	        	struct dirent *en;
    
